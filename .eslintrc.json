@@ -1,0 +1,7 @@
+{
+  "extends": "react-app",
+  "rules": {
+    "no-empty-pattern": "off",
+    "jsx-a11y/anchor-is-valid": "off"
+  }  
+}
