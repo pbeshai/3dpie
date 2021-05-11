@@ -50,9 +50,8 @@ const Pie = ({
   outerRadius = 100,
   cornerRadius = 0,
   padAngle = 0.05,
-  mode = 'stair',
-  offsetThickness = 0.15,
-  offsetIncrement = offsetThickness,
+  roughness,
+  metalness,
   onClickSlice,
 }) => {
   const prevData = usePrevious(data)
@@ -130,6 +129,8 @@ const Pie = ({
             arcs={arcs}
             arcGenerator={arcGenerator}
             onClick={onClickSlice}
+            roughness={roughness}
+            metalness={metalness}
           />
         )
       })}
@@ -150,6 +151,8 @@ const PieSlice = ({
   height,
   onClick,
   offset = 0,
+  roughness = 0.2,
+  metalness = 0,
 }) => {
   const sliceColors = ['#c4c', 'tomato', '#0bb', '#cc0']
 
@@ -198,10 +201,11 @@ const PieSlice = ({
         {/* <shapeGeometry args={[shape]} /> */}
         <extrudeGeometry args={[shape, extrudeSettings]} />
         {/* <cylinderGeometry args={[1, 1, 0.4, 64]} />*/}
-        <meshPhongMaterial
+        {/* <meshPhongMaterial color={color} /> */}
+        <meshStandardMaterial
           color={color}
-          // roughness={0.2}
-          // metalness={1}
+          roughness={roughness}
+          metalness={metalness}
         />
         {/* <meshBasicMaterial color={color} side={BackSide} /> */}
       </animated.mesh>

@@ -28,6 +28,20 @@ const palette = shuffle([
   // '#ef4444',
 ])
 
+export const environmentFilesMap = {
+  none: null,
+  sunset: 'venice_sunset_1k.hdr',
+  dawn: 'kiara_1_dawn_1k.hdr',
+  night: 'dikhololo_night_1k.hdr',
+  warehouse: 'empty_warehouse_01_1k.hdr',
+  forest: 'forest_slope_1k.hdr',
+  apartment: 'lebombo_1k.hdr',
+  studio: 'studio_small_03_1k.hdr',
+  city: 'potsdamer_platz_1k.hdr',
+  park: 'rooitou_park_1k.hdr',
+  lobby: 'st_fagans_interior_1k.hdr',
+}
+
 function distributePrefix(prefix, controlValues, set) {
   const prefixKeys = Object.keys(controlValues).filter((d) =>
     d.startsWith(prefix)
@@ -69,10 +83,15 @@ function App() {
     cornerRadius,
     padAngle,
     allHeights,
+    environmentFile,
+    spotLightIntensity,
+    ambientLightIntensity,
+    roughness,
+    metalness,
   } = useControls({
     numSlices: { value: 4, step: 1, min: 2, max: 10, label: '# slices' },
     allHeights: {
-      value: 0.3,
+      value: 0.5,
       min: 0.01,
       max: 2,
       step: 0.05,
@@ -86,7 +105,7 @@ function App() {
       label: 'donut',
     },
     outerRadius: {
-      value: 100,
+      value: 150,
       min: 50,
       max: 300,
       step: 1,
@@ -106,63 +125,110 @@ function App() {
       step: 0.001,
       label: 'pad angle',
     },
-
-    heightButtons: buttonGroup({
-      label: 'heights',
-      opts: {
-        distribute: () => {
-          distributePrefix(
-            'height',
-            controlValuesRef.current[0],
-            controlValuesRef.current[1]
-          )
+    lighting: folder(
+      {
+        ambientLightIntensity: {
+          label: 'ambient',
+          min: 0,
+          max: 1,
+          step: 0.05,
+          value: 0.2,
         },
-        min: () => {
-          setPrefix(
-            'height',
-            'min',
-            controlValuesRef.current[0],
-            controlValuesRef.current[1]
-          )
+        spotLightIntensity: {
+          label: 'spot',
+          min: 0,
+          max: 1,
+          step: 0.05,
+          value: 0.75,
         },
-        max: () => {
-          setPrefix(
-            'height',
-            'max',
-            controlValuesRef.current[0],
-            controlValuesRef.current[1]
-          )
-        },
-        reset: () => {
-          setPrefix(
-            'height',
-            0.3,
-            controlValuesRef.current[0],
-            controlValuesRef.current[1]
-          )
+        environmentFile: {
+          label: 'environment',
+          value: 'night',
+          options: environmentFilesMap,
         },
       },
-    }),
-    offsetButtons: buttonGroup({
-      label: 'offsets',
-      opts: {
-        distribute: () => {
-          distributePrefix(
-            'offset',
-            controlValuesRef.current[0],
-            controlValuesRef.current[1]
-          )
+      { collapsed: true }
+    ),
+    material: folder(
+      {
+        roughness: {
+          label: 'roughness',
+          min: 0,
+          max: 1,
+          step: 0.05,
+          value: 0.2,
         },
-        reset: () => {
-          setPrefix(
-            'offset',
-            0,
-            controlValuesRef.current[0],
-            controlValuesRef.current[1]
-          )
+        metalness: {
+          label: 'metalness',
+          min: 0,
+          max: 1,
+          step: 0.05,
+          value: 0.0,
         },
       },
-    }),
+      { collapsed: true }
+    ),
+    positioning: folder(
+      {
+        heightButtons: buttonGroup({
+          label: 'heights',
+          opts: {
+            distribute: () => {
+              distributePrefix(
+                'height',
+                controlValuesRef.current[0],
+                controlValuesRef.current[1]
+              )
+            },
+            min: () => {
+              setPrefix(
+                'height',
+                'min',
+                controlValuesRef.current[0],
+                controlValuesRef.current[1]
+              )
+            },
+            max: () => {
+              setPrefix(
+                'height',
+                'max',
+                controlValuesRef.current[0],
+                controlValuesRef.current[1]
+              )
+            },
+            reset: () => {
+              setPrefix(
+                'height',
+                0.5,
+                controlValuesRef.current[0],
+                controlValuesRef.current[1]
+              )
+            },
+          },
+        }),
+        offsetButtons: buttonGroup({
+          label: 'offsets',
+          opts: {
+            distribute: () => {
+              distributePrefix(
+                'offset',
+                controlValuesRef.current[0],
+                controlValuesRef.current[1]
+              )
+            },
+            reset: () => {
+              setPrefix(
+                'offset',
+                0,
+                controlValuesRef.current[0],
+                controlValuesRef.current[1]
+              )
+            },
+          },
+        }),
+      },
+      { collapsed: true }
+    ),
   })
   React.useEffect(() => {
     if (!controlValuesRef.current) return
@@ -176,7 +242,7 @@ function App() {
 
   const controlConfig = {}
   for (let i = 0; i < numSlices; ++i) {
-    const id = `slice ${i}`
+    const id = `slice ${i + 1}`
     controlConfig[id] = folder({
       [`value${i}`]: { value: Math.random(), label: 'value' },
       details: folder(
@@ -186,7 +252,7 @@ function App() {
 
           [`explode${i}`]: { value: false, label: 'explode' },
           [`height${i}`]: {
-            value: 0.3,
+            value: 0.5,
             min: 0.01,
             max: 2,
             step: 0.05,
@@ -222,12 +288,15 @@ function App() {
     })
   }
 
+  const addEnvironment = !!environmentFile
+
   return (
     <div id="canvas-container" className="w-full h-full">
       <Canvas shadows dpr={[1, 2]} camera={{ position: [3, 3, 4], fov: 50 }}>
-        <ambientLight intensity={0.7} />
+        <ambientLight intensity={ambientLightIntensity} />
+
         <spotLight
-          intensity={0.5}
+          intensity={spotLightIntensity}
           angle={0.1}
           penumbra={1}
           position={[10, 15, 10]}
@@ -244,14 +313,18 @@ function App() {
             outerRadius={outerRadius}
             cornerRadius={cornerRadius}
             padAngle={padAngle}
+            roughness={roughness}
+            metalness={metalness}
             onClickSlice={(i) =>
               set({ [`explode${i}`]: !controlValues[`explode${i}`] })
             }
           />
         </Suspense>
-        <Suspense fallback={null}>
-          <Environment preset="night" />
-        </Suspense>
+        {addEnvironment && (
+          <Suspense fallback={null}>
+            <Environment path="/hdri/" files={environmentFile} />
+          </Suspense>
+        )}
         <ContactShadows
           rotation-x={Math.PI / 2}
           position={[0, -0.4, 0]}
