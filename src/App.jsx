@@ -1,354 +1,226 @@
-import React, { Suspense, useRef, useState, useEffect } from 'react'
-import { Canvas, useFrame, useLoader } from '@react-three/fiber'
-// import Post from './Post'
+import Effects from './Effects'
 // import { EffectComposer, SSAO, Bloom } from '@react-three/postprocessing'
 // import { KernelSize } from 'postprocessing'
-import {
-  ContactShadows,
-  Environment,
-  OrbitControls,
-  GizmoViewport,
-  GizmoHelper,
-  Box,
-  Reflector,
-  Text,
-  Plane,
-} from '@react-three/drei'
-import { HexColorInput, HexColorPicker } from 'react-colorful'
-import { pie, arc } from 'd3-shape'
-import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader'
-import { BackSide, Shape } from 'three'
-import Effects from './Effects'
-import { scaleLinear } from 'd3-scale'
-import { range, sum } from 'd3-array'
-import { format } from 'd3-format'
+import { ContactShadows, Environment, OrbitControls } from '@react-three/drei'
+import { Canvas } from '@react-three/fiber'
+import { range, shuffle, extent, max, min } from 'd3-array'
+import { button, buttonGroup, folder, useControls } from 'leva'
+import React, { Suspense } from 'react'
+import Pie, { SvgPie } from './Pie'
 
-function Picker({ color, onChange }) {
-  return (
-    <div>
-      <HexColorPicker className="picker" color={color} onChange={onChange} />
-      <HexColorInput
-        color={color}
-        onChange={onChange}
-        className="block w-32 mx-auto mt-2 text-center text-gray-800"
-      />
-    </div>
+const palette = shuffle([
+  '#f43f5e',
+  // '#ec4899',
+  '#d946ef',
+  // '#a855f7',
+  '#8b5cf6',
+  // '#6366f1',
+  '#3b82f6',
+  // '#0ea5e9',
+  '#06b6d4',
+  // '#14b8a6',
+  // '#10b981',
+  '#22c55e',
+  // '#84cc16',
+  '#eab308',
+  // '#f59e0b',
+  '#f97316',
+  // '#ef4444',
+])
+
+function distributePrefix(prefix, controlValues, set) {
+  const prefixKeys = Object.keys(controlValues).filter((d) =>
+    d.startsWith(prefix)
   )
-}
-const Billboard = ({
-  follow = true,
-  lockX = false,
-  lockY = false,
-  lockZ = false,
-  children,
-}) => {
-  console.log('children=', children)
-  const child = React.Children.only(children)
-  const localRef = React.useRef()
-
-  useFrame(({ camera }) => {
-    if (!follow) return
-    if (localRef.current) {
-      const prev = {
-        x: localRef.current.rotation.x,
-        y: localRef.current.rotation.y,
-        z: localRef.current.rotation.z,
-      }
-      localRef.current.lookAt(camera.position)
-      // readjust any axis that is locked
-      if (lockX) localRef.current.rotation.x = prev.x
-      if (lockY) localRef.current.rotation.y = prev.y
-      if (lockZ) localRef.current.rotation.z = prev.z
-    }
-  })
-
-  return React.cloneElement(child, { ref: localRef })
-}
-// const BillboardRenderFn = ({`
-//   follow = true,
-//   lockX = false,
-//   lockY = false,
-//   lockZ = false,
-//   children, // render function
-// }) => {
-//   const localRef = React.useRef()
-
-//   useFrame(({ camera }) => {
-//     if (!follow) return
-//     if (localRef.current) {
-//       const prev = {
-//         x: localRef.current.rotation.x,
-//         y: localRef.current.rotation.y,
-//         z: localRef.current.rotation.z,
-//       }
-//       localRef.current.lookAt(camera.position)
-//       // readjust any axis that is locked
-//       if (lockX) localRef.current.rotation.x = prev.x
-//       if (lockY) localRef.current.rotation.y = prev.y
-//       if (lockZ) localRef.current.rotation.z = prev.z
-//     }
-//   })
-
-//   return children({ ref: localRef })
-// }
-
-const BillboardText = ({
-  follow = true,
-  lockX = false,
-  lockY = false,
-  lockZ = false,
-  ...other
-}) => {
-  const localRef = React.useRef()
-
-  useFrame(({ camera }) => {
-    if (!follow) return
-    if (localRef.current) {
-      const prev = {
-        x: localRef.current.rotation.x,
-        y: localRef.current.rotation.y,
-        z: localRef.current.rotation.z,
-      }
-      localRef.current.lookAt(camera.position)
-      // readjust any axis that is locked
-      if (lockX) localRef.current.rotation.x = prev.x
-      if (lockY) localRef.current.rotation.y = prev.y
-      if (lockZ) localRef.current.rotation.z = prev.z
-    }
-  })
-
-  return <Text ref={localRef} {...other} />
-}
-
-function makePieDataUri(data) {
-  const arcs = pie().value((d) => d.value)(data)
-
-  const arcGenerator = arc()
-    .innerRadius(2)
-    .outerRadius(100)
-    .cornerRadius(0)
-    .padAngle(0.05)
-  const svgDataUri = `data:image/svg+xml;base64,${btoa(`
-    <svg xmlns="http://www.w3.org/2000/svg">
-    <g transform="scale(0.01)">
-      ${arcs.map((arcData, i) => {
-        return `<path d="${arcGenerator(arcData)}" />`
-      })}
-      </g>
-    </svg>
-  `)}`
-
-  return [svgDataUri, arcs, arcGenerator]
-}
-
-const Pie = ({ color = '#ff00ff', data }) => {
-  // const pieSvgDataUri = `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxNTAgMTUwKSI+PHBhdGggZD0iTTY5LjM5NjcwMjg0NjU3MDUyLDY2LjEyMTgyNDU2OTEyMTQ2QTQsNCwwLDAsMSw2OS40NjE1NTcyMTM1NTMwNCw3MS45MzgxMTI3NzM4ODU3MkExMDAsMTAwLDAsMCwxLC05Ni4wNTc3Mjc0OTI2MjAxNiwyNy44MDEzMTI3MTk5NjkyNzhBNCw0LDAsMCwxLC05My4xMDU1MDIxMjg3NDA2MSwyMi43ODk1NDg1NjI0NDMyMjZMLTEuNjM1ODM3ODY4NDQ0MDcxMywxLjkxMjE5NDU5MDM3MjYwNDVBMi4zMzM1OTExMTk0MjI2MTc4LDIuMzMzNTkxMTE5NDIyNjE3OCwwLDAsMSwwLjQ2NjU0Nzg0Mzc1ODU5ODM3LDIuNDcyODA5NDkzODI4ODYwN1oiIGZpbGw9InRvbWF0byIgc3Ryb2tlPSJibGFjayI+PC9wYXRoPjxwYXRoIGQ9Ik0tMzEuMjg2ODQ1MjMxNjcyMjAzLC05MC42NTYyMzc2MjEwMjQwOUE0LDQsMCwwLDEsLTI4LjY1NjM1MjA1MDk4MzI4NywtOTUuODA2MTI0NDc2MTAwNzJBMTAwLDEwMCwwLDAsMSwtNS42Nzg4NjkwMzM4NTc0MzMsLTk5LjgzODYyMjAxODIxNjQ1QTQsNCwwLDAsMSwtMS40NTE5OTE3MTc3MzAzMDI4LC05NS44OTIxODg1NDYzMTQwMkwtMC4zNDU3MTIwODMwMDcyNDA3NywtMS45Njk4OTQxOTkxMDM3OTgxWiIgZmlsbD0iI2NjMCIgc3Ryb2tlPSJibGFjayI+PC9wYXRoPjxwYXRoIGQ9Ik0xLjUwMDI0MzcwOTM5MDA3MzYsLTk1Ljg0MjMwNDQzMzU3MTA2QTQsNCwwLDAsMSw1LjcyOTQyMDUzMDYxNDY2LC05OS44MzU3MzM3ODQ5Njk4NUExMDAsMTAwLDAsMCwxLDc3LjIzNTI1NzY4MjQ2NDA4LDYzLjUxOTQwNjI1MjkxOTA2QTQsNCwwLDAsMSw3MS40MzIyMzk0NTM2MDU5Miw2My45MTczOTM2OTY2MTExNUwyLjc3MjE5Mjg3NjkxMzc5MDUsMC41MTc3OTI0NzA1MzEwMTExQTMuOTU1MDkwMTc0NTc4MzI0LDMuOTU1MDkwMTc0NTc4MzI0LDAsMCwxLDEuNTAwMjQzNzA5MzkwMDM2MywtMi4zODc5NzYzODIxNjY3MDNaIiBmaWxsPSIjYzRjIiBzdHJva2U9ImJsYWNrIj48L3BhdGg+PHBhdGggZD0iTS05My43Nzg4OTkzMDgwNjIyMSwxOS44NzMxNjg0NTEzOTgxMDRBNCw0LDAsMCwxLC05OC42MDYyNzcyMzYyNDQ2MiwxNi42MzczNzAyNzMyMzkzMDJBMTAwLDEwMCwwLDAsMSwtMzkuMzc0ODMwNjg1NzcyMTQ2LC05MS45MjE4MjkzMzU5NDU5N0E0LDQsMCwwLDEsLTM0LjA0MTMwNjQzNDc4MDE4LC04OS42MTM2OTQ0NjY1NDE4TC0xLjc1NTY3MzI2MDEyNDg0OTUsLTAuOTU3OTIwMzUzNTE3MjM0MVoiIGZpbGw9IiMwYmIiIHN0cm9rZT0iYmxhY2siPjwvcGF0aD48L2c+PC9zdmc+`
-  const [pieSvgDataUri, arcs, arcGenerator] = makePieDataUri(data)
-
-  const loadedSvg = useLoader(SVGLoader, pieSvgDataUri)
-  const shapes = loadedSvg.paths.flatMap((shapePath) => shapePath.toShapes())
-  // .slice(0, 1)
-
-  const sliceColors = ['#c4c', 'tomato', '#0bb', '#cc0']
-  const extrudeSettings = {
-    curveSegments: 256,
-    steps: 2,
-    depth: 0.001,
-    bevelEnabled: true,
-    bevelThickness: 0.01,
-    bevelSize: 0.01,
-    bevelOffset: 0.0,
-    bevelSegments: 1,
+  const prefixExtent = extent(prefixKeys, (key) => controlValues[key])
+  const numIncrements = prefixKeys.length - 1
+  const increment = (prefixExtent[1] - prefixExtent[0]) / numIncrements
+  const update = {}
+  let i = 0
+  for (const key of prefixKeys) {
+    update[key] = prefixExtent[0] + increment * i++
   }
-
-  const heightScale = scaleLinear()
-    .domain([0, arcs.length - 1])
-    .range([0.25, 0.65])
-
-  const totalValue = sum(arcs, (d) => d.value)
-
-  return (
-    <group>
-      {shapes.map((shape, i) => {
-        const arc = arcs[i]
-        const color = sliceColors[i]
-        const height = heightScale(i)
-        let xOffset = 0
-        let zOffset = 0
-
-        if (i === 0) {
-          // explode the pieces
-          // 1. we need to get middle angle of the slice
-          const theta = (arc.startAngle + arc.endAngle) / 2 - Math.PI / 2
-
-          // 2. unit direction vector to offset by
-          let explosionMagnitude = 0.2
-
-          xOffset = Math.cos(theta) * explosionMagnitude
-          zOffset = Math.sin(theta) * explosionMagnitude
-        }
-
-        const centroid = arcGenerator.centroid(arc)
-        let [xText, zText] = centroid
-        xText *= 0.01
-        zText *= 0.01
-        const yTextOffset = 0.125
-        // glorious idea for laziness
-        // const percent = (arc.endAngle - arc.startAngle) / (Math.PI * 2)
-        const percent = arc.value / totalValue
-
-        return (
-          <group key={i} position={[xOffset, height, zOffset]}>
-            <mesh rotation={[Math.PI / 2, 0, 0]} receiveShadow>
-              {/* <shapeGeometry args={[shape]} /> */}
-              <extrudeGeometry
-                args={[shape, { ...extrudeSettings, depth: height }]}
-              />
-              {/* <cylinderGeometry args={[1, 1, 0.4, 64]} />*/}
-              <meshPhongMaterial
-                color={color}
-                // roughness={0.2}
-                // metalness={1}
-              />
-              {/* <meshBasicMaterial color={color} side={BackSide} /> */}
-            </mesh>
-            <Billboard>
-              <Text
-                position={[xText, yTextOffset, zText]}
-                castShadow
-                fontSize={0.2}
-                maxWidth={200}
-                lineHeight={1}
-                letterSpacing={0.02}
-                textAlign={'left'}
-                font="https://fonts.gstatic.com/s/raleway/v14/1Ptrg8zYS_SKggPNwK4vaqI.woff"
-                anchorX="center"
-                anchorY="middle"
-                fillOpacity={1}
-                color="white"
-                outlineWidth={'2.5%'}
-                outlineColor="#000000"
-                outlineOpacity={0.2}
-              >
-                {format('.0%')(percent)}
-              </Text>
-            </Billboard>
-          </group>
-        )
-      })}
-      {/* 
-      {arcs.map((arc, i) => {
-
-
-        return (
-          <Text
-            position={[x, height + yOffset, z]}
-            castShadow
-            fontSize={0.2}
-            maxWidth={200}
-            lineHeight={1}
-            letterSpacing={0.02}
-            textAlign={'left'}
-            font="https://fonts.gstatic.com/s/raleway/v14/1Ptrg8zYS_SKggPNwK4vaqI.woff"
-            anchorX="center"
-            anchorY="middle"
-            fillOpacity={1}
-            fill="white"
-            // strokeWidth={'2.5%'}
-            // strokeColor="#ffffff"
-          >
-            95%
-          </Text>
-        )
-      })} */}
-    </group>
-  )
+  set(update)
 }
 
-const SvgPie = ({ data }) => {
-  const [, arcs, arcGenerator] = makePieDataUri(data)
-
-  return (
-    <svg width={300} height={300} xmlns="http://www.w3.org/2000/svg">
-      <g transform={`translate(150 150)`}>
-        {arcs.map((arcData, i) => {
-          return (
-            <path
-              key={arcData.data.id}
-              d={arcGenerator(arcData)}
-              fill={['#c4c', 'tomato', '#0bb', '#cc0'][i]}
-              stroke="black"
-            />
-          )
-        })}
-      </g>
-    </svg>
+function setPrefix(prefix, value, controlValues, set) {
+  const prefixKeys = Object.keys(controlValues).filter((d) =>
+    d.startsWith(prefix)
   )
-}
-
-const PieInputs = ({ data, onChange }) => {
-  const handleChange = (evt) => {
-    const index = +evt.target.name
-    const value = +evt.target.value
-
-    onChange([
-      index === 0 ? { ...data[0], value } : data[0],
-      index === 1 ? { ...data[1], value } : data[1],
-      index === 2 ? { ...data[2], value } : data[2],
-      index === 3 ? { ...data[3], value } : data[3],
-    ])
+  if (value === 'max') {
+    value = max(prefixKeys, (key) => controlValues[key])
+  } else if (value === 'min') {
+    value = min(prefixKeys, (key) => controlValues[key])
   }
-
-  return (
-    <form
-      onChange={handleChange}
-      className="grid grid-cols-4 gap-2 p-1 text-black"
-    >
-      <input
-        value={data[0].value}
-        name="0"
-        type="number"
-        min={0}
-        max={10}
-        step={0.1}
-      />
-      <input
-        value={data[1].value}
-        name="1"
-        type="number"
-        min={0}
-        max={10}
-        step={0.1}
-      />
-      <input
-        value={data[2].value}
-        name="2"
-        type="number"
-        min={0}
-        max={10}
-        step={0.1}
-      />
-      <input
-        value={data[3].value}
-        name="3"
-        type="number"
-        min={0}
-        max={10}
-        step={0.1}
-      />
-    </form>
-  )
+  const update = {}
+  for (const key of prefixKeys) {
+    update[key] = value
+  }
+  set(update)
 }
 
 function App() {
-  const [color, setColor] = React.useState('#a7e1e9')
   const controlsRef = React.useRef()
-  const [data, setData] = React.useState([
-    { id: 3, value: 0.9 },
-    { id: 1, value: 0.7 },
-    { id: 4, value: 0.5 },
-    { id: 2, value: 0.12 },
-  ])
+  const controlValuesRef = React.useRef()
+  const {
+    numSlices,
+    innerRadius,
+    outerRadius,
+    cornerRadius,
+    padAngle,
+    allHeights,
+  } = useControls({
+    numSlices: { value: 4, step: 1, min: 2, max: 10, label: '# slices' },
+    allHeights: {
+      value: 0.3,
+      min: 0.01,
+      max: 2,
+      step: 0.05,
+      label: 'all heights',
+    },
+    innerRadius: {
+      value: 2,
+      min: 0,
+      max: 100,
+      step: 1,
+      label: 'donut',
+    },
+    outerRadius: {
+      value: 100,
+      min: 50,
+      max: 300,
+      step: 1,
+      label: 'outer',
+    },
+    cornerRadius: {
+      value: 10,
+      min: 0,
+      max: 50,
+      step: 1,
+      label: 'corner',
+    },
+    padAngle: {
+      value: 0.05,
+      min: 0,
+      max: Math.PI / 8,
+      step: 0.001,
+      label: 'pad angle',
+    },
+
+    heightButtons: buttonGroup({
+      label: 'heights',
+      opts: {
+        distribute: () => {
+          distributePrefix(
+            'height',
+            controlValuesRef.current[0],
+            controlValuesRef.current[1]
+          )
+        },
+        min: () => {
+          setPrefix(
+            'height',
+            'min',
+            controlValuesRef.current[0],
+            controlValuesRef.current[1]
+          )
+        },
+        max: () => {
+          setPrefix(
+            'height',
+            'max',
+            controlValuesRef.current[0],
+            controlValuesRef.current[1]
+          )
+        },
+        reset: () => {
+          setPrefix(
+            'height',
+            0.3,
+            controlValuesRef.current[0],
+            controlValuesRef.current[1]
+          )
+        },
+      },
+    }),
+    offsetButtons: buttonGroup({
+      label: 'offsets',
+      opts: {
+        distribute: () => {
+          distributePrefix(
+            'offset',
+            controlValuesRef.current[0],
+            controlValuesRef.current[1]
+          )
+        },
+        reset: () => {
+          setPrefix(
+            'offset',
+            0,
+            controlValuesRef.current[0],
+            controlValuesRef.current[1]
+          )
+        },
+      },
+    }),
+  })
+  React.useEffect(() => {
+    if (!controlValuesRef.current) return
+    setPrefix(
+      'height',
+      allHeights,
+      controlValuesRef.current[0],
+      controlValuesRef.current[1]
+    )
+  }, [allHeights, controlValuesRef])
+
+  const controlConfig = {}
+  for (let i = 0; i < numSlices; ++i) {
+    const id = `slice ${i}`
+    controlConfig[id] = folder({
+      [`value${i}`]: { value: Math.random(), label: 'value' },
+      details: folder(
+        {
+          [`color${i}`]: { value: palette[i % palette.length], label: 'color' },
+          //`hsl(${Math.random() * 360},${0.7 * 100},${0.5 * 100})`,
+
+          [`explode${i}`]: { value: false, label: 'explode' },
+          [`height${i}`]: {
+            value: 0.3,
+            min: 0.01,
+            max: 2,
+            step: 0.05,
+            label: 'height',
+          },
+          [`offset${i}`]: {
+            value: 0,
+            min: 0.0,
+            max: 2,
+            step: 0.05,
+            label: 'offset',
+          },
+        },
+        { collapsed: true }
+      ),
+    })
+  }
+
+  const [controlValues, set] = useControls(() => controlConfig, [numSlices])
+
+  React.useEffect(() => {
+    controlValuesRef.current = [controlValues, set]
+  }, [controlValues, set])
+
+  const data = []
+  for (let i = 0; i < numSlices; ++i) {
+    data.push({
+      value: controlValues[`value${i}`],
+      color: controlValues[`color${i}`],
+      explode: controlValues[`explode${i}`],
+      height: controlValues[`height${i}`],
+      offset: controlValues[`offset${i}`],
+    })
+  }
 
   return (
     <div id="canvas-container" className="w-full h-full">
@@ -366,7 +238,16 @@ function App() {
           {/* <Box args={[2.5, 0.001, 2.5]}>
             <meshPhongMaterial attach="material" color="#00ff00" wireframe />
           </Box> */}
-          <Pie color={color} data={data} />
+          <Pie
+            data={data}
+            innerRadius={innerRadius}
+            outerRadius={outerRadius}
+            cornerRadius={cornerRadius}
+            padAngle={padAngle}
+            onClickSlice={(i) =>
+              set({ [`explode${i}`]: !controlValues[`explode${i}`] })
+            }
+          />
         </Suspense>
         <Suspense fallback={null}>
           <Environment preset="night" />
@@ -380,7 +261,7 @@ function App() {
           blur={1.5}
           far={0.8}
         />
-        <GizmoHelper
+        {/* <GizmoHelper
           alignment={'bottom-left'}
           margin={[80, 80]}
           onTarget={() => controlsRef?.current?.target}
@@ -390,22 +271,18 @@ function App() {
             axisColors={['red', 'green', 'blue']}
             labelColor={'white'}
           />
-        </GizmoHelper>
+        </GizmoHelper> */}
         <OrbitControls
           ref={controlsRef}
           // minPolarAngle={Math.PI / 2}
-          // maxPolarAngle={Math.PI / 2}
+          maxPolarAngle={Math.PI / 2}
           // enableZoom={false}
           enablePan={false}
         />
         {/* <Effects /> */}
       </Canvas>
-      <div className="absolute top-0 right-0">
-        <PieInputs onChange={setData} data={data} />
-        {/* <SvgPie data={data} /> */}
-      </div>
       {/* <div className="absolute top-0 left-0">
-        <Picker color={color} onChange={setColor} />
+        <SvgPie data={data} />
       </div> */}
     </div>
   )
