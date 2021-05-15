@@ -1,32 +1,11 @@
-import Effects from './Effects'
-// import { EffectComposer, SSAO, Bloom } from '@react-three/postprocessing'
-// import { KernelSize } from 'postprocessing'
 import { ContactShadows, Environment, OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
-import { range, shuffle, extent, max, min } from 'd3-array'
-import { button, buttonGroup, folder, useControls } from 'leva'
+import { extent, max, min } from 'd3-array'
+import { buttonGroup, folder, useControls } from 'leva'
 import React, { Suspense } from 'react'
-import Pie, { SvgPie } from './Pie'
-
-const palette = shuffle([
-  '#f43f5e',
-  // '#ec4899',
-  '#d946ef',
-  // '#a855f7',
-  '#8b5cf6',
-  // '#6366f1',
-  '#3b82f6',
-  // '#0ea5e9',
-  '#06b6d4',
-  // '#14b8a6',
-  // '#10b981',
-  '#22c55e',
-  // '#84cc16',
-  '#eab308',
-  // '#f59e0b',
-  '#f97316',
-  // '#ef4444',
-])
+import Pie from './Pie'
+import Effects from './Effects'
+import { palette } from './theme'
 
 export const environmentFilesMap = {
   none: null,
@@ -88,6 +67,11 @@ function App() {
     ambientLightIntensity,
     roughness,
     metalness,
+    valueLabelPosition,
+    showBloom,
+    bloomStrength,
+    bloomRadius,
+    bloomThreshold,
   } = useControls({
     numSlices: { value: 4, step: 1, min: 2, max: 10, label: '# slices' },
     allHeights: {
@@ -96,6 +80,13 @@ function App() {
       max: 2,
       step: 0.05,
       label: 'all heights',
+    },
+    valueLabelPosition: {
+      label: 'labels',
+      min: 0,
+      max: 1,
+      step: 0.01,
+      value: 0.65,
     },
     innerRadius: {
       value: 2,
@@ -109,14 +100,14 @@ function App() {
       min: 50,
       max: 300,
       step: 1,
-      label: 'outer',
+      label: 'radius',
     },
     cornerRadius: {
       value: 10,
       min: 0,
       max: 50,
       step: 1,
-      label: 'corner',
+      label: 'corners',
     },
     padAngle: {
       value: 0.05,
@@ -164,6 +155,36 @@ function App() {
           max: 1,
           step: 0.05,
           value: 0.0,
+        },
+      },
+      { collapsed: true }
+    ),
+    glow: folder(
+      {
+        showBloom: {
+          label: 'enabled',
+          value: false,
+        },
+        bloomStrength: {
+          label: 'strength',
+          value: 1,
+          min: 0,
+          max: 3,
+          step: 0.01,
+        },
+        bloomRadius: {
+          label: 'radius',
+          value: 1.5,
+          min: 0,
+          max: 2,
+          step: 0.01,
+        },
+        bloomThreshold: {
+          label: 'threshold',
+          value: 0.15,
+          min: 0,
+          max: 1,
+          step: 0.01,
         },
       },
       { collapsed: true }
@@ -304,9 +325,6 @@ function App() {
         />
 
         <Suspense fallback={null}>
-          {/* <Box args={[2.5, 0.001, 2.5]}>
-            <meshPhongMaterial attach="material" color="#00ff00" wireframe />
-          </Box> */}
           <Pie
             data={data}
             innerRadius={innerRadius}
@@ -315,6 +333,7 @@ function App() {
             padAngle={padAngle}
             roughness={roughness}
             metalness={metalness}
+            valueLabelPosition={valueLabelPosition}
             onClickSlice={(i) =>
               set({ [`explode${i}`]: !controlValues[`explode${i}`] })
             }
@@ -352,7 +371,13 @@ function App() {
           // enableZoom={false}
           enablePan={false}
         />
-        {/* <Effects /> */}
+        {showBloom && (
+          <Effects
+            bloomStrength={bloomStrength}
+            bloomThreshold={bloomThreshold}
+            bloomRadius={bloomRadius}
+          />
+        )}
       </Canvas>
       {/* <div className="absolute top-0 left-0">
         <SvgPie data={data} />

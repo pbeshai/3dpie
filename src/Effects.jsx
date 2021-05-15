@@ -17,19 +17,26 @@ extend({
   FilmPass,
 })
 
-export default function Effects() {
+export default function Effects({
+  bloomStrength = 0.35,
+  bloomRadius = 5,
+  bloomThreshold = 0.3,
+}) {
   const composer = useRef()
   const { scene, gl, size, camera } = useThree()
-  const aspect = useMemo(() => new THREE.Vector2(512, 512), [])
-  useEffect(() => void composer.current.setSize(size.width, size.height), [
+  const aspect = useMemo(() => new THREE.Vector2(1024, 1024), [])
+  useEffect(() => void composer.current?.setSize(size.width, size.height), [
     size,
   ])
-  useFrame(() => composer.current.render(), 1)
+  useFrame(() => composer.current?.render(), 1)
   return (
     <effectComposer ref={composer} args={[gl]}>
       <renderPass attachArray="passes" scene={scene} camera={camera} />
       {/* <waterPass attachArray="passes" factor={1.5} /> */}
-      <unrealBloomPass attachArray="passes" args={[aspect, 0.35, 5, 0.3]} />
+      <unrealBloomPass
+        attachArray="passes"
+        args={[aspect, bloomStrength, bloomRadius, bloomThreshold]}
+      />
     </effectComposer>
   )
 }
