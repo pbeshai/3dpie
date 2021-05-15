@@ -26,12 +26,17 @@ function App() {
     bloomRadius,
     bloomThreshold,
     enableTurntable,
+    backgroundColor,
   } = controlValues
 
   const addEnvironment = !!environmentFile
 
   return (
-    <div id="canvas-container" className="w-full h-full">
+    <div
+      id="canvas-container"
+      className="w-full h-full"
+      style={{ backgroundColor }}
+    >
       <Canvas shadows dpr={[1, 2]} camera={{ position: [3, 3, 4], fov: 50 }}>
         <ambientLight intensity={ambientLightIntensity} />
 

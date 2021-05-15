@@ -90,6 +90,7 @@ const useInputControls = () => {
   const controlValuesRef = React.useRef()
   const {
     numSlices,
+    backgroundColor,
     innerRadius,
     outerRadius,
     cornerRadius,
@@ -304,6 +305,11 @@ const useInputControls = () => {
         },
         { collapsed: true }
       ),
+      backgroundColor: {
+        value: '#1f2937',
+        label: 'bg',
+        ...urlSync('spn', '#1f2937'),
+      },
     }),
     enableTurntable: {
       value: false,
@@ -383,6 +389,7 @@ const useInputControls = () => {
   return [
     {
       ...controlValues,
+      backgroundColor,
       numSlices,
       innerRadius,
       outerRadius,
