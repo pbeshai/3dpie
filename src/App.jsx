@@ -1,5 +1,5 @@
 import { ContactShadows, Environment, OrbitControls } from '@react-three/drei'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { extent, max, min } from 'd3-array'
 import { buttonGroup, folder, useControls } from 'leva'
 import React, { Suspense } from 'react'
@@ -72,184 +72,193 @@ function App() {
     bloomStrength,
     bloomRadius,
     bloomThreshold,
+    enableTurntable,
   } = useControls({
+    customize: folder({
+      dimensions: folder(
+        {
+          allHeights: {
+            value: 0.5,
+            min: 0.01,
+            max: 2,
+            step: 0.05,
+            label: 'all heights',
+          },
+          valueLabelPosition: {
+            label: 'labels',
+            min: 0,
+            max: 1,
+            step: 0.01,
+            value: 0.65,
+          },
+          innerRadius: {
+            value: 2,
+            min: 0,
+            max: 100,
+            step: 1,
+            label: 'donut',
+          },
+          outerRadius: {
+            value: 150,
+            min: 50,
+            max: 300,
+            step: 1,
+            label: 'radius',
+          },
+          cornerRadius: {
+            value: 10,
+            min: 0,
+            max: 50,
+            step: 1,
+            label: 'corners',
+          },
+          padAngle: {
+            value: 0.05,
+            min: 0,
+            max: Math.PI / 8,
+            step: 0.001,
+            label: 'pad angle',
+          },
+        },
+        { collapsed: true }
+      ),
+      lighting: folder(
+        {
+          ambientLightIntensity: {
+            label: 'ambient',
+            min: 0,
+            max: 1,
+            step: 0.05,
+            value: 0.2,
+          },
+          spotLightIntensity: {
+            label: 'spot',
+            min: 0,
+            max: 1,
+            step: 0.05,
+            value: 0.75,
+          },
+          environmentFile: {
+            label: 'environment',
+            value: 'night',
+            options: environmentFilesMap,
+          },
+        },
+        { collapsed: true }
+      ),
+      material: folder(
+        {
+          roughness: {
+            label: 'roughness',
+            min: 0,
+            max: 1,
+            step: 0.05,
+            value: 0.2,
+          },
+          metalness: {
+            label: 'metalness',
+            min: 0,
+            max: 1,
+            step: 0.05,
+            value: 0.0,
+          },
+        },
+        { collapsed: true }
+      ),
+      glow: folder(
+        {
+          showBloom: {
+            label: 'enabled',
+            value: false,
+          },
+          bloomStrength: {
+            label: 'strength',
+            value: 1,
+            min: 0,
+            max: 3,
+            step: 0.01,
+          },
+          bloomRadius: {
+            label: 'radius',
+            value: 1.5,
+            min: 0,
+            max: 2,
+            step: 0.01,
+          },
+          bloomThreshold: {
+            label: 'threshold',
+            value: 0.15,
+            min: 0,
+            max: 1,
+            step: 0.01,
+          },
+        },
+        { collapsed: true }
+      ),
+      positioning: folder(
+        {
+          heightButtons: buttonGroup({
+            label: 'heights',
+            opts: {
+              distribute: () => {
+                distributePrefix(
+                  'height',
+                  controlValuesRef.current[0],
+                  controlValuesRef.current[1]
+                )
+              },
+              min: () => {
+                setPrefix(
+                  'height',
+                  'min',
+                  controlValuesRef.current[0],
+                  controlValuesRef.current[1]
+                )
+              },
+              max: () => {
+                setPrefix(
+                  'height',
+                  'max',
+                  controlValuesRef.current[0],
+                  controlValuesRef.current[1]
+                )
+              },
+              reset: () => {
+                setPrefix(
+                  'height',
+                  0.5,
+                  controlValuesRef.current[0],
+                  controlValuesRef.current[1]
+                )
+              },
+            },
+          }),
+          offsetButtons: buttonGroup({
+            label: 'offsets',
+            opts: {
+              distribute: () => {
+                distributePrefix(
+                  'offset',
+                  controlValuesRef.current[0],
+                  controlValuesRef.current[1]
+                )
+              },
+              reset: () => {
+                setPrefix(
+                  'offset',
+                  0,
+                  controlValuesRef.current[0],
+                  controlValuesRef.current[1]
+                )
+              },
+            },
+          }),
+        },
+        { collapsed: true }
+      ),
+    }),
+    enableTurntable: { value: false, label: 'spin' },
     numSlices: { value: 4, step: 1, min: 2, max: 10, label: '# slices' },
-    allHeights: {
-      value: 0.5,
-      min: 0.01,
-      max: 2,
-      step: 0.05,
-      label: 'all heights',
-    },
-    valueLabelPosition: {
-      label: 'labels',
-      min: 0,
-      max: 1,
-      step: 0.01,
-      value: 0.65,
-    },
-    innerRadius: {
-      value: 2,
-      min: 0,
-      max: 100,
-      step: 1,
-      label: 'donut',
-    },
-    outerRadius: {
-      value: 150,
-      min: 50,
-      max: 300,
-      step: 1,
-      label: 'radius',
-    },
-    cornerRadius: {
-      value: 10,
-      min: 0,
-      max: 50,
-      step: 1,
-      label: 'corners',
-    },
-    padAngle: {
-      value: 0.05,
-      min: 0,
-      max: Math.PI / 8,
-      step: 0.001,
-      label: 'pad angle',
-    },
-    lighting: folder(
-      {
-        ambientLightIntensity: {
-          label: 'ambient',
-          min: 0,
-          max: 1,
-          step: 0.05,
-          value: 0.2,
-        },
-        spotLightIntensity: {
-          label: 'spot',
-          min: 0,
-          max: 1,
-          step: 0.05,
-          value: 0.75,
-        },
-        environmentFile: {
-          label: 'environment',
-          value: 'night',
-          options: environmentFilesMap,
-        },
-      },
-      { collapsed: true }
-    ),
-    material: folder(
-      {
-        roughness: {
-          label: 'roughness',
-          min: 0,
-          max: 1,
-          step: 0.05,
-          value: 0.2,
-        },
-        metalness: {
-          label: 'metalness',
-          min: 0,
-          max: 1,
-          step: 0.05,
-          value: 0.0,
-        },
-      },
-      { collapsed: true }
-    ),
-    glow: folder(
-      {
-        showBloom: {
-          label: 'enabled',
-          value: false,
-        },
-        bloomStrength: {
-          label: 'strength',
-          value: 1,
-          min: 0,
-          max: 3,
-          step: 0.01,
-        },
-        bloomRadius: {
-          label: 'radius',
-          value: 1.5,
-          min: 0,
-          max: 2,
-          step: 0.01,
-        },
-        bloomThreshold: {
-          label: 'threshold',
-          value: 0.15,
-          min: 0,
-          max: 1,
-          step: 0.01,
-        },
-      },
-      { collapsed: true }
-    ),
-    positioning: folder(
-      {
-        heightButtons: buttonGroup({
-          label: 'heights',
-          opts: {
-            distribute: () => {
-              distributePrefix(
-                'height',
-                controlValuesRef.current[0],
-                controlValuesRef.current[1]
-              )
-            },
-            min: () => {
-              setPrefix(
-                'height',
-                'min',
-                controlValuesRef.current[0],
-                controlValuesRef.current[1]
-              )
-            },
-            max: () => {
-              setPrefix(
-                'height',
-                'max',
-                controlValuesRef.current[0],
-                controlValuesRef.current[1]
-              )
-            },
-            reset: () => {
-              setPrefix(
-                'height',
-                0.5,
-                controlValuesRef.current[0],
-                controlValuesRef.current[1]
-              )
-            },
-          },
-        }),
-        offsetButtons: buttonGroup({
-          label: 'offsets',
-          opts: {
-            distribute: () => {
-              distributePrefix(
-                'offset',
-                controlValuesRef.current[0],
-                controlValuesRef.current[1]
-              )
-            },
-            reset: () => {
-              setPrefix(
-                'offset',
-                0,
-                controlValuesRef.current[0],
-                controlValuesRef.current[1]
-              )
-            },
-          },
-        }),
-      },
-      { collapsed: true }
-    ),
   })
   React.useEffect(() => {
     if (!controlValuesRef.current) return
@@ -325,19 +334,21 @@ function App() {
         />
 
         <Suspense fallback={null}>
-          <Pie
-            data={data}
-            innerRadius={innerRadius}
-            outerRadius={outerRadius}
-            cornerRadius={cornerRadius}
-            padAngle={padAngle}
-            roughness={roughness}
-            metalness={metalness}
-            valueLabelPosition={valueLabelPosition}
-            onClickSlice={(i) =>
-              set({ [`explode${i}`]: !controlValues[`explode${i}`] })
-            }
-          />
+          <Turntable enabled={enableTurntable} speed={0.01}>
+            <Pie
+              data={data}
+              innerRadius={innerRadius}
+              outerRadius={outerRadius}
+              cornerRadius={cornerRadius}
+              padAngle={padAngle}
+              roughness={roughness}
+              metalness={metalness}
+              valueLabelPosition={valueLabelPosition}
+              onClickSlice={(i) =>
+                set({ [`explode${i}`]: !controlValues[`explode${i}`] })
+              }
+            />
+          </Turntable>
         </Suspense>
         {addEnvironment && (
           <Suspense fallback={null}>
@@ -387,3 +398,14 @@ function App() {
 }
 
 export default App
+
+function Turntable({ enabled = true, children, speed = 0.01 }) {
+  const ref = React.useRef(null)
+  useFrame(() => {
+    if (ref.current && enabled) {
+      ref.current.rotation.y += speed
+    }
+  })
+
+  return <group ref={ref}>{children}</group>
+}
