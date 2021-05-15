@@ -100,6 +100,7 @@ function App() {
           />
         )}
       </Canvas>
+      {/* Optionally render the 2D version */}
       {/* <div className="absolute top-0 left-0">
         <SvgPie data={data} />
       </div> */}

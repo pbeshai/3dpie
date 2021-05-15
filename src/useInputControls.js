@@ -3,6 +3,43 @@ import { buttonGroup, folder, useControls } from 'leva'
 import React from 'react'
 import { palette } from './theme'
 
+function writeChangesToUrl(key) {
+  return (value) => {
+    const params = new URLSearchParams(window.location.search)
+    params.set(
+      key,
+      typeof value === 'number' ? Math.round(100 * value) / 100 : value
+    )
+    const searchString = params.toString()
+    window.history.replaceState(
+      window.location.state,
+      '',
+      `${window.location.protocol}//${window.location.host}${
+        window.location.pathname
+      }${searchString ? '?' + searchString : ''}`
+    )
+  }
+}
+
+function parseValue(value, type) {
+  if (value == null || type == null) return value
+  if (type === 'boolean') {
+    return value === 'true' || value === true
+  }
+
+  return value
+}
+
+/** adds URL write support to a param */
+function createUrlSync() {
+  const initialParams = new URLSearchParams(window.location.search)
+  return (key, defaultValue, type) => ({
+    value: parseValue(initialParams.get(key), type) ?? defaultValue,
+    onChange: writeChangesToUrl(key, type),
+    transient: false,
+  })
+}
+
 export const environmentFilesMap = {
   none: null,
   sunset: 'venice_sunset_1k.hdr',
@@ -49,6 +86,7 @@ function setPrefix(prefix, value, controlValues, set) {
 }
 
 const useInputControls = () => {
+  const [urlSync] = React.useState(() => createUrlSync())
   const controlValuesRef = React.useRef()
   const {
     numSlices,
@@ -78,6 +116,7 @@ const useInputControls = () => {
             max: 2,
             step: 0.05,
             label: 'all heights',
+            ...urlSync('ah', 0.5),
           },
           valueLabelPosition: {
             label: 'labels',
@@ -85,6 +124,7 @@ const useInputControls = () => {
             max: 1,
             step: 0.01,
             value: 0.65,
+            ...urlSync('vlp', 0.65),
           },
           innerRadius: {
             value: 2,
@@ -92,6 +132,7 @@ const useInputControls = () => {
             max: 100,
             step: 1,
             label: 'donut',
+            ...urlSync('dnt', 2),
           },
           outerRadius: {
             value: 150,
@@ -99,6 +140,7 @@ const useInputControls = () => {
             max: 300,
             step: 1,
             label: 'radius',
+            ...urlSync('r', 150),
           },
           cornerRadius: {
             value: 10,
@@ -106,6 +148,7 @@ const useInputControls = () => {
             max: 50,
             step: 1,
             label: 'corners',
+            ...urlSync('cr', 10),
           },
           padAngle: {
             value: 0.05,
@@ -113,9 +156,10 @@ const useInputControls = () => {
             max: Math.PI / 8,
             step: 0.001,
             label: 'pad angle',
+            ...urlSync('ang', 0.05),
           },
         },
-        { collapsed: true }
+        { collapsed: false }
       ),
       lighting: folder(
         {
@@ -125,6 +169,7 @@ const useInputControls = () => {
             max: 1,
             step: 0.05,
             value: 0.2,
+            ...urlSync('amb', 0.2),
           },
           spotLightIntensity: {
             label: 'spot',
@@ -132,11 +177,13 @@ const useInputControls = () => {
             max: 1,
             step: 0.05,
             value: 0.75,
+            ...urlSync('spt', 0.75),
           },
           environmentFile: {
             label: 'environment',
             value: 'night',
             options: environmentFilesMap,
+            ...urlSync('env', 'night'),
           },
         },
         { collapsed: true }
@@ -149,6 +196,7 @@ const useInputControls = () => {
             max: 1,
             step: 0.05,
             value: 0.2,
+            ...urlSync('rgh', 0.2),
           },
           metalness: {
             label: 'metalness',
@@ -156,6 +204,7 @@ const useInputControls = () => {
             max: 1,
             step: 0.05,
             value: 0.0,
+            ...urlSync('met', 0.0),
           },
         },
         { collapsed: true }
@@ -165,6 +214,7 @@ const useInputControls = () => {
           showBloom: {
             label: 'enabled',
             value: false,
+            ...urlSync('blm', false, 'boolean'),
           },
           bloomStrength: {
             label: 'strength',
@@ -172,6 +222,7 @@ const useInputControls = () => {
             min: 0,
             max: 3,
             step: 0.01,
+            ...urlSync('bls', 1),
           },
           bloomRadius: {
             label: 'radius',
@@ -179,6 +230,7 @@ const useInputControls = () => {
             min: 0,
             max: 2,
             step: 0.01,
+            ...urlSync('blr', 1.5),
           },
           bloomThreshold: {
             label: 'threshold',
@@ -186,6 +238,7 @@ const useInputControls = () => {
             min: 0,
             max: 1,
             step: 0.01,
+            ...urlSync('blt', 0.15),
           },
         },
         { collapsed: true }
@@ -252,8 +305,19 @@ const useInputControls = () => {
         { collapsed: true }
       ),
     }),
-    enableTurntable: { value: false, label: 'spin' },
-    numSlices: { value: 4, step: 1, min: 2, max: 10, label: '# slices' },
+    enableTurntable: {
+      value: false,
+      label: 'spin',
+      ...urlSync('spn', false, 'boolean'),
+    },
+    numSlices: {
+      value: 4,
+      step: 1,
+      min: 2,
+      max: 10,
+      label: '# slices',
+      ...urlSync('n', 4),
+    },
   })
   React.useEffect(() => {
     if (!controlValuesRef.current) return
@@ -269,19 +333,32 @@ const useInputControls = () => {
   for (let i = 0; i < numSlices; ++i) {
     const id = `slice ${i + 1}`
     controlConfig[id] = folder({
-      [`value${i}`]: { value: Math.random(), label: 'value' },
+      [`value${i}`]: {
+        value: Math.random(),
+        label: 'value',
+        ...urlSync(`v${i}`, Math.random()),
+      },
       details: folder(
         {
-          [`color${i}`]: { value: palette[i % palette.length], label: 'color' },
+          [`color${i}`]: {
+            value: palette[i % palette.length],
+            label: 'color',
+            ...urlSync(`c${i}`, palette[i % palette.length]),
+          },
           //`hsl(${Math.random() * 360},${0.7 * 100},${0.5 * 100})`,
 
-          [`explode${i}`]: { value: false, label: 'explode' },
+          [`explode${i}`]: {
+            value: false,
+            label: 'explode',
+            ...urlSync(`x${i}`, false, 'boolean'),
+          },
           [`height${i}`]: {
             value: 0.5,
             min: 0.01,
             max: 2,
             step: 0.05,
             label: 'height',
+            ...urlSync(`h${i}`, 0.5),
           },
           [`offset${i}`]: {
             value: 0,
@@ -289,6 +366,7 @@ const useInputControls = () => {
             max: 2,
             step: 0.05,
             label: 'offset',
+            ...urlSync(`o${i}`, 0.0),
           },
         },
         { collapsed: true }
