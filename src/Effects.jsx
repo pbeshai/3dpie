@@ -21,6 +21,7 @@ export default function Effects({
   bloomStrength = 0.35,
   bloomRadius = 5,
   bloomThreshold = 0.3,
+  backgroundColor,
 }) {
   const composer = useRef()
   const { scene, gl, size, camera } = useThree()
@@ -28,7 +29,12 @@ export default function Effects({
   useEffect(() => void composer.current?.setSize(size.width, size.height), [
     size,
   ])
-  useFrame(() => composer.current?.render(), 1)
+  useFrame(({ gl }) => {
+    // if (backgroundColor) {
+    //   gl.setClearColor(backgroundColor)
+    // }
+    composer.current?.render()
+  }, 1)
   return (
     <effectComposer ref={composer} args={[gl]}>
       <renderPass attachArray="passes" scene={scene} camera={camera} />

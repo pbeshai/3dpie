@@ -99,6 +99,7 @@ function App() {
         />
         {showBloom && (
           <Effects
+            backgroundColor={backgroundColor}
             bloomStrength={bloomStrength}
             bloomThreshold={bloomThreshold}
             bloomRadius={bloomRadius}
