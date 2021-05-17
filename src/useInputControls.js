@@ -1,5 +1,5 @@
 import { extent, max, min } from 'd3-array'
-import { buttonGroup, folder, useControls } from 'leva'
+import { button, buttonGroup, folder, useControls } from 'leva'
 import React from 'react'
 import { palette } from './theme'
 
@@ -10,7 +10,6 @@ let initialized = false
 function writeChangesToUrl(key) {
   return (value) => {
     if (!initialized) return
-    console.log('changing value', key, performance.now())
     const params = new URLSearchParams(window.location.search)
     params.set(
       key,
@@ -96,6 +95,9 @@ const useInputControls = () => {
   const controlValuesRef = React.useRef()
   const {
     numSlices,
+    title,
+    titleOffset,
+    titleMaxWidth,
     backgroundColor,
     innerRadius,
     outerRadius,
@@ -114,7 +116,33 @@ const useInputControls = () => {
     bloomThreshold,
     enableTurntable,
   } = useControls({
+    reset: button(() => {
+      window.location.href = '/'
+    }),
     customize: folder({
+      titleFolder: folder({
+        title: {
+          label: 'title',
+          value: '',
+          ...urlSync('t', ''),
+        },
+        titleMaxWidth: {
+          label: 'max width',
+          step: 5,
+          min: 0,
+          max: 100,
+          value: 80,
+          ...urlSync('tmw', 80),
+        },
+        titleOffset: {
+          label: 'y-offset',
+          min: -50,
+          max: 50,
+          step: 0.5,
+          value: -30,
+          ...urlSync('tmw', -30),
+        },
+      }),
       dimensions: folder(
         {
           allHeights: {
@@ -369,12 +397,12 @@ const useInputControls = () => {
             ...urlSync(`x${i}`, false, 'boolean'),
           },
           [`height${i}`]: {
-            value: 0.5,
+            value: allHeights,
             min: 0.01,
             max: 2,
             step: 0.05,
             label: 'height',
-            ...urlSync(`h${i}`, 0.5),
+            ...urlSync(`h${i}`, allHeights),
           },
           [`offset${i}`]: {
             value: 0,
@@ -407,6 +435,9 @@ const useInputControls = () => {
   return [
     {
       ...controlValues,
+      title,
+      titleMaxWidth,
+      titleOffset,
       backgroundColor,
       numSlices,
       innerRadius,
@@ -435,12 +466,12 @@ export function pieDataFromControls(controlValues) {
   const data = []
   for (let i = 0; i < controlValues.numSlices; ++i) {
     data.push({
-      value: controlValues[`value${i}`],
+      value: +controlValues[`value${i}`],
       color: controlValues[`color${i}`],
       label: controlValues[`label${i}`],
       explode: controlValues[`explode${i}`],
-      height: controlValues[`height${i}`],
-      offset: controlValues[`offset${i}`],
+      height: +controlValues[`height${i}`],
+      offset: +controlValues[`offset${i}`],
     })
   }
 

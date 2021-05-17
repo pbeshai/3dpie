@@ -28,6 +28,9 @@ function App() {
     bloomThreshold,
     enableTurntable,
     backgroundColor,
+    title,
+    titleMaxWidth,
+    titleOffset,
   } = controlValues
 
   const addEnvironment = !!environmentFile
@@ -38,7 +41,10 @@ function App() {
       className="w-full h-full"
       style={{ backgroundColor }}
     >
-      <Leva collapsed={window.innerWidth < 800} />
+      <Leva
+        collapsed={window.innerWidth < 800}
+        titleBar={{ title: 'Customize Pie' }}
+      />
       <Canvas shadows dpr={[1, 2]} camera={{ position: [3, 3, 4], fov: 50 }}>
         <ambientLight intensity={ambientLightIntensity} />
 
@@ -112,6 +118,18 @@ function App() {
       {/* <div className="absolute top-0 left-0">
         <SvgPie data={data} />
       </div> */}
+      <div
+        className="absolute w-full mx-auto text-3xl font-black text-center poxinter-events-none"
+        style={{
+          top: '50%',
+          left: '50%',
+          maxWidth: `${titleMaxWidth}vw`,
+          transform: `translate(-50%, ${titleOffset}vh)`,
+          textShadow: `-1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black, 1px -1px 0 black, 4px 4px 10px rgba(0,0,0,0.5)`,
+        }}
+      >
+        {title}
+      </div>
       <div className="absolute bottom-0 p-2 text-xs text-gray-500">
         Made with 😈&nbsp; by{' '}
         <a
