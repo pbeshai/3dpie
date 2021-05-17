@@ -3,8 +3,14 @@ import { buttonGroup, folder, useControls } from 'leva'
 import React from 'react'
 import { palette } from './theme'
 
+// lazy global state to track whether we did the first initialization of controls
+// otherwise, we set everything in the URL immediately.
+let initialized = false
+
 function writeChangesToUrl(key) {
   return (value) => {
+    if (!initialized) return
+    console.log('changing value', key, performance.now())
     const params = new URLSearchParams(window.location.search)
     params.set(
       key,
@@ -340,9 +346,9 @@ const useInputControls = () => {
     const id = `slice ${i + 1}`
     controlConfig[id] = folder({
       [`value${i}`]: {
-        value: Math.random(),
+        value: 0.8 - (i === 0 ? 0 : 1 / Math.pow(2, i)),
         label: 'value',
-        ...urlSync(`v${i}`, Math.random()),
+        ...urlSync(`v${i}`, i === 0 ? 1.5 : 1 / Math.pow(2, i * 0.35)),
       },
       details: folder(
         {
@@ -356,7 +362,6 @@ const useInputControls = () => {
             label: 'color',
             ...urlSync(`c${i}`, palette[i % palette.length]),
           },
-          //`hsl(${Math.random() * 360},${0.7 * 100},${0.5 * 100})`,
 
           [`explode${i}`]: {
             value: false,
@@ -390,6 +395,14 @@ const useInputControls = () => {
   React.useEffect(() => {
     controlValuesRef.current = [controlValues, set]
   }, [controlValues, set])
+
+  // lazy global initialization flag
+  React.useEffect(() => {
+    initialized = true
+    return () => {
+      initialized = false
+    }
+  }, [])
 
   return [
     {

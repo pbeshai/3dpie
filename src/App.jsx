@@ -1,5 +1,6 @@
 import { ContactShadows, Environment, OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
+import { Leva } from 'leva'
 import React, { Suspense } from 'react'
 import Effects from './Effects'
 import Pie from './Pie'
@@ -37,6 +38,7 @@ function App() {
       className="w-full h-full"
       style={{ backgroundColor }}
     >
+      <Leva collapsed={window.innerWidth < 800} />
       <Canvas shadows dpr={[1, 2]} camera={{ position: [3, 3, 4], fov: 50 }}>
         <ambientLight intensity={ambientLightIntensity} />
 
@@ -110,6 +112,15 @@ function App() {
       {/* <div className="absolute top-0 left-0">
         <SvgPie data={data} />
       </div> */}
+      <div className="absolute bottom-0 p-2 text-xs text-gray-500">
+        Made with 😈&nbsp; by{' '}
+        <a
+          href="https://peterbeshai.com"
+          className="font-semibold hover:underline"
+        >
+          Peter Beshai
+        </a>
+      </div>
     </div>
   )
 }

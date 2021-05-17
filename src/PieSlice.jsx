@@ -70,7 +70,6 @@ const PieSlice = ({
         onClick={(evt) => {
           onClick?.(i)
           evt.stopPropagation(true)
-          evt.preventDefault(true)
         }}
         receiveShadow
         // onPointerEnter={() => setActiveSlice(i)}
