@@ -346,6 +346,11 @@ const useInputControls = () => {
       },
       details: folder(
         {
+          [`label${i}`]: {
+            value: '',
+            label: 'label',
+            ...urlSync(`l${i}`, ''),
+          },
           [`color${i}`]: {
             value: palette[i % palette.length],
             label: 'color',
@@ -419,6 +424,7 @@ export function pieDataFromControls(controlValues) {
     data.push({
       value: controlValues[`value${i}`],
       color: controlValues[`color${i}`],
+      label: controlValues[`label${i}`],
       explode: controlValues[`explode${i}`],
       height: controlValues[`height${i}`],
       offset: controlValues[`offset${i}`],

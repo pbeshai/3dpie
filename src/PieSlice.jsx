@@ -28,6 +28,7 @@ const PieSlice = ({
   formatter = format('.0%'),
 }) => {
   const arc = arcs[i]
+  const label = datum.label
   const color = datum.color ?? palette[i % palette.length]
   let xOffset = 0
   let zOffset = 0
@@ -107,6 +108,31 @@ const PieSlice = ({
           {formatter(percent)}
         </Text>
       </Billboard>
+      {label && (
+        <Billboard>
+          <Text
+            position={[xText, yTextOffset + 0.15, zText]}
+            // castShadow
+            fontSize={0.1}
+            maxWidth={200}
+            lineHeight={1}
+            letterSpacing={0.02}
+            textAlign={'left'}
+            font="https://fonts.gstatic.com/s/raleway/v14/1Ptrg8zYS_SKggPNwK4vaqI.woff"
+            anchorX="center"
+            anchorY="middle"
+            fillOpacity={1}
+            color={color}
+            outlineWidth={'2.5%'}
+            outlineColor="#000000"
+            outlineOpacity={1}
+            strokeColor="white"
+            strokeWidth={'2%'}
+          >
+            {label}
+          </Text>
+        </Billboard>
+      )}
     </animated.group>
   )
 }
