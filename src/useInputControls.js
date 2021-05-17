@@ -1,5 +1,5 @@
 import { extent, max, min } from 'd3-array'
-import { button, buttonGroup, folder, useControls } from 'leva'
+import { button, buttonGroup, folder, useControls, LevaInputs } from 'leva'
 import React from 'react'
 import { palette } from './theme'
 
@@ -124,12 +124,14 @@ const useInputControls = () => {
         title: {
           label: 'title',
           value: '',
+          type: LevaInputs.STRING,
           ...urlSync('t', ''),
         },
         titleMaxWidth: {
           label: 'max width',
           step: 5,
           min: 0,
+          type: LevaInputs.NUMBER,
           max: 100,
           value: 80,
           ...urlSync('tmw', 80),
@@ -137,6 +139,7 @@ const useInputControls = () => {
         titleOffset: {
           label: 'y-offset',
           min: -50,
+          type: LevaInputs.NUMBER,
           max: 50,
           step: 0.5,
           value: -30,
@@ -148,6 +151,7 @@ const useInputControls = () => {
           allHeights: {
             value: 0.5,
             min: 0.01,
+            type: LevaInputs.NUMBER,
             max: 2,
             step: 0.05,
             label: 'all heights',
@@ -156,6 +160,7 @@ const useInputControls = () => {
           valueLabelPosition: {
             label: 'labels',
             min: 0,
+            type: LevaInputs.NUMBER,
             max: 1,
             step: 0.01,
             value: 0.65,
@@ -164,6 +169,7 @@ const useInputControls = () => {
           innerRadius: {
             value: 2,
             min: 0,
+            type: LevaInputs.NUMBER,
             max: 100,
             step: 1,
             label: 'donut',
@@ -172,6 +178,7 @@ const useInputControls = () => {
           outerRadius: {
             value: 150,
             min: 50,
+            type: LevaInputs.NUMBER,
             max: 300,
             step: 1,
             label: 'radius',
@@ -180,6 +187,7 @@ const useInputControls = () => {
           cornerRadius: {
             value: 10,
             min: 0,
+            type: LevaInputs.NUMBER,
             max: 50,
             step: 1,
             label: 'corners',
@@ -188,6 +196,7 @@ const useInputControls = () => {
           padAngle: {
             value: 0.05,
             min: 0,
+            type: LevaInputs.NUMBER,
             max: Math.PI / 8,
             step: 0.001,
             label: 'pad angle',
@@ -201,6 +210,7 @@ const useInputControls = () => {
           ambientLightIntensity: {
             label: 'ambient',
             min: 0,
+            type: LevaInputs.NUMBER,
             max: 1,
             step: 0.05,
             value: 0.2,
@@ -209,6 +219,7 @@ const useInputControls = () => {
           spotLightIntensity: {
             label: 'spot',
             min: 0,
+            type: LevaInputs.NUMBER,
             max: 1,
             step: 0.05,
             value: 0.75,
@@ -217,6 +228,7 @@ const useInputControls = () => {
           environmentFile: {
             label: 'environment',
             value: environmentFilesMap.night,
+            type: LevaInputs.SELECT,
             options: environmentFilesMap,
             ...urlSync('env', environmentFilesMap.night),
           },
@@ -228,6 +240,7 @@ const useInputControls = () => {
           roughness: {
             label: 'roughness',
             min: 0,
+            type: LevaInputs.NUMBER,
             max: 1,
             step: 0.05,
             value: 0.2,
@@ -236,6 +249,7 @@ const useInputControls = () => {
           metalness: {
             label: 'metalness',
             min: 0,
+            type: LevaInputs.NUMBER,
             max: 1,
             step: 0.05,
             value: 0.0,
@@ -249,12 +263,14 @@ const useInputControls = () => {
           showBloom: {
             label: 'enabled',
             value: false,
+            type: LevaInputs.BOOLEAN,
             ...urlSync('blm', false, 'boolean'),
           },
           bloomStrength: {
             label: 'strength',
             value: 1,
             min: 0,
+            type: LevaInputs.NUMBER,
             max: 3,
             step: 0.01,
             ...urlSync('bls', 1),
@@ -263,6 +279,7 @@ const useInputControls = () => {
             label: 'radius',
             value: 1.5,
             min: 0,
+            type: LevaInputs.NUMBER,
             max: 2,
             step: 0.01,
             ...urlSync('blr', 1.5),
@@ -271,6 +288,7 @@ const useInputControls = () => {
             label: 'threshold',
             value: 0.15,
             min: 0,
+            type: LevaInputs.NUMBER,
             max: 1,
             step: 0.01,
             ...urlSync('blt', 0.15),
@@ -342,12 +360,14 @@ const useInputControls = () => {
       backgroundColor: {
         value: '#1f2937',
         label: 'bg',
-        ...urlSync('spn', '#1f2937'),
+        type: LevaInputs.COLOR,
+        ...urlSync('bg', '#1f2937'),
       },
     }),
     enableTurntable: {
       value: false,
       label: 'spin',
+      type: LevaInputs.BOOLEAN,
       ...urlSync('spn', false, 'boolean'),
     },
     numSlices: {
@@ -355,6 +375,7 @@ const useInputControls = () => {
       step: 1,
       min: 2,
       max: 10,
+      type: LevaInputs.NUMBER,
       label: '# slices',
       ...urlSync('n', 4),
     },
@@ -383,17 +404,20 @@ const useInputControls = () => {
           [`label${i}`]: {
             value: '',
             label: 'label',
+            type: LevaInputs.STRING,
             ...urlSync(`l${i}`, ''),
           },
           [`color${i}`]: {
             value: palette[i % palette.length],
             label: 'color',
+            type: LevaInputs.COLOR,
             ...urlSync(`c${i}`, palette[i % palette.length]),
           },
 
           [`explode${i}`]: {
             value: false,
             label: 'explode',
+            type: LevaInputs.BOOLEAN,
             ...urlSync(`x${i}`, false, 'boolean'),
           },
           [`height${i}`]: {
@@ -402,6 +426,7 @@ const useInputControls = () => {
             max: 2,
             step: 0.05,
             label: 'height',
+            type: LevaInputs.NUMBER,
             ...urlSync(`h${i}`, allHeights),
           },
           [`offset${i}`]: {
@@ -410,6 +435,7 @@ const useInputControls = () => {
             max: 2,
             step: 0.05,
             label: 'offset',
+            type: LevaInputs.NUMBER,
             ...urlSync(`o${i}`, 0.0),
           },
         },
