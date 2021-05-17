@@ -7,6 +7,11 @@
     "build": "vite build",
     "serve": "vite preview"
   },
+  "homepage": "http://3dpie.peterbeshai.com/",
+  "repository": {
+    "url": "https://github.com/pbeshai/3dpie.git",
+    "type": "git"
+  },
   "dependencies": {
     "@react-spring/three": "^9.1.2",
     "@react-three/drei": "^4.3.2",

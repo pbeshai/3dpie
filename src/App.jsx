@@ -138,6 +138,12 @@ function App() {
         >
           Peter Beshai
         </a>
+        <a
+          href="https://github.com/pbeshai/3dpie"
+          className="ml-2 font-medium hover:underline"
+        >
+          GitHub
+        </a>
       </div>
     </div>
   )
