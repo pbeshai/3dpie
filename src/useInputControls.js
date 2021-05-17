@@ -216,9 +216,9 @@ const useInputControls = () => {
           },
           environmentFile: {
             label: 'environment',
-            value: 'night',
+            value: environmentFilesMap.night,
             options: environmentFilesMap,
-            ...urlSync('env', 'night'),
+            ...urlSync('env', environmentFilesMap.night),
           },
         },
         { collapsed: true }
