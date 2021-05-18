@@ -114,7 +114,7 @@ const useInputControls = () => {
     bloomStrength,
     bloomRadius,
     bloomThreshold,
-    enableTurntable,
+    spinSpeed,
   } = useControls({
     reset: button(() => {
       window.location.href = '/'
@@ -364,11 +364,14 @@ const useInputControls = () => {
         ...urlSync('bg', '#1f2937'),
       },
     }),
-    enableTurntable: {
-      value: false,
+    spinSpeed: {
       label: 'spin',
-      type: LevaInputs.BOOLEAN,
-      ...urlSync('spn', false, 'boolean'),
+      min: 0,
+      max: 1,
+      value: 0.0,
+      step: 0.01,
+      type: LevaInputs.NUMBER,
+      ...urlSync('spn', 0),
     },
     numSlices: {
       value: 4,
@@ -481,7 +484,7 @@ const useInputControls = () => {
       bloomStrength,
       bloomRadius,
       bloomThreshold,
-      enableTurntable,
+      spinSpeed,
     },
     set,
   ]

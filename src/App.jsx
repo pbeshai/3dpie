@@ -26,7 +26,7 @@ function App() {
     bloomStrength,
     bloomRadius,
     bloomThreshold,
-    enableTurntable,
+    spinSpeed,
     backgroundColor,
     title,
     titleMaxWidth,
@@ -57,7 +57,7 @@ function App() {
         />
 
         <Suspense fallback={null}>
-          <Turntable enabled={enableTurntable} speed={0.01}>
+          <Turntable enabled={spinSpeed > 0} speed={spinSpeed * 0.02}>
             <Pie
               data={data}
               innerRadius={innerRadius}
