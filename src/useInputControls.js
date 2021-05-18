@@ -119,251 +119,257 @@ const useInputControls = () => {
     reset: button(() => {
       window.location.href = '/'
     }),
-    customize: folder({
-      title: folder({
-        title: {
-          label: 'text',
-          value: '',
-          type: LevaInputs.STRING,
-          ...urlSync('t', ''),
-        },
-        titleMaxWidth: {
-          label: 'max width',
-          step: 5,
-          min: 0,
-          type: LevaInputs.NUMBER,
-          max: 100,
-          value: 80,
-          ...urlSync('tmw', 80),
-        },
-        titleOffset: {
-          label: 'y-offset',
-          min: -50,
-          type: LevaInputs.NUMBER,
-          max: 50,
-          step: 0.5,
-          value: -30,
-          ...urlSync('tmw', -30),
-        },
-      }),
-      dimensions: folder(
-        {
-          allHeights: {
-            value: 0.5,
-            min: 0.01,
-            type: LevaInputs.NUMBER,
-            max: 2,
-            step: 0.05,
-            label: 'all heights',
-            ...urlSync('ah', 0.5),
-          },
-          valueLabelPosition: {
-            label: 'labels',
-            min: 0,
-            type: LevaInputs.NUMBER,
-            max: 1,
-            step: 0.01,
-            value: 0.65,
-            ...urlSync('vlp', 0.65),
-          },
-          innerRadius: {
-            value: 2,
-            min: 0,
-            type: LevaInputs.NUMBER,
-            max: 100,
-            step: 1,
-            label: 'donut',
-            ...urlSync('dnt', 2),
-          },
-          outerRadius: {
-            value: 150,
-            min: 50,
-            type: LevaInputs.NUMBER,
-            max: 300,
-            step: 1,
-            label: 'radius',
-            ...urlSync('r', 150),
-          },
-          cornerRadius: {
-            value: 0,
-            min: 0,
-            type: LevaInputs.NUMBER,
-            max: 50,
-            step: 1,
-            label: 'corners',
-            ...urlSync('cr', 0),
-          },
-          padAngle: {
-            value: 0.05,
-            min: 0,
-            type: LevaInputs.NUMBER,
-            max: Math.PI / 8,
-            step: 0.001,
-            label: 'pad angle',
-            ...urlSync('ang', 0.05),
-          },
-        },
-        { collapsed: false }
-      ),
-      lighting: folder(
-        {
-          ambientLightIntensity: {
-            label: 'ambient',
-            min: 0,
-            type: LevaInputs.NUMBER,
-            max: 1,
-            step: 0.05,
-            value: 0.2,
-            ...urlSync('amb', 0.2),
-          },
-          spotLightIntensity: {
-            label: 'spot',
-            min: 0,
-            type: LevaInputs.NUMBER,
-            max: 1,
-            step: 0.05,
-            value: 0.75,
-            ...urlSync('spt', 0.75),
-          },
-          environmentFile: {
-            label: 'environment',
-            value: environmentFilesMap.night,
-            type: LevaInputs.SELECT,
-            options: environmentFilesMap,
-            ...urlSync('env', environmentFilesMap.night),
-          },
-        },
-        { collapsed: true }
-      ),
-      material: folder(
-        {
-          roughness: {
-            label: 'roughness',
-            min: 0,
-            type: LevaInputs.NUMBER,
-            max: 1,
-            step: 0.05,
-            value: 0.2,
-            ...urlSync('rgh', 0.2),
-          },
-          metalness: {
-            label: 'metalness',
-            min: 0,
-            type: LevaInputs.NUMBER,
-            max: 1,
-            step: 0.05,
-            value: 0.0,
-            ...urlSync('met', 0.0),
-          },
-        },
-        { collapsed: true }
-      ),
-      glow: folder(
-        {
-          showBloom: {
-            label: 'enabled',
-            value: false,
-            type: LevaInputs.BOOLEAN,
-            ...urlSync('blm', false, 'boolean'),
-          },
-          bloomStrength: {
-            label: 'strength',
-            value: 1,
-            min: 0,
-            type: LevaInputs.NUMBER,
-            max: 3,
-            step: 0.01,
-            ...urlSync('bls', 1),
-          },
-          bloomRadius: {
-            label: 'radius',
-            value: 1.5,
-            min: 0,
-            type: LevaInputs.NUMBER,
-            max: 2,
-            step: 0.01,
-            ...urlSync('blr', 1.5),
-          },
-          bloomThreshold: {
-            label: 'threshold',
-            value: 0.15,
-            min: 0,
-            type: LevaInputs.NUMBER,
-            max: 1,
-            step: 0.01,
-            ...urlSync('blt', 0.15),
-          },
-        },
-        { collapsed: true }
-      ),
-      positioning: folder(
-        {
-          heightButtons: buttonGroup({
-            label: 'heights',
-            opts: {
-              distribute: () => {
-                distributePrefix(
-                  'height',
-                  controlValuesRef.current[0],
-                  controlValuesRef.current[1]
-                )
-              },
-              min: () => {
-                setPrefix(
-                  'height',
-                  'min',
-                  controlValuesRef.current[0],
-                  controlValuesRef.current[1]
-                )
-              },
-              max: () => {
-                setPrefix(
-                  'height',
-                  'max',
-                  controlValuesRef.current[0],
-                  controlValuesRef.current[1]
-                )
-              },
-              reset: () => {
-                setPrefix(
-                  'height',
-                  0.5,
-                  controlValuesRef.current[0],
-                  controlValuesRef.current[1]
-                )
-              },
+    customize: folder(
+      {
+        title: folder(
+          {
+            title: {
+              label: 'text',
+              value: '',
+              type: LevaInputs.STRING,
+              ...urlSync('t', ''),
             },
-          }),
-          offsetButtons: buttonGroup({
-            label: 'offsets',
-            opts: {
-              distribute: () => {
-                distributePrefix(
-                  'offset',
-                  controlValuesRef.current[0],
-                  controlValuesRef.current[1]
-                )
-              },
-              reset: () => {
-                setPrefix(
-                  'offset',
-                  0,
-                  controlValuesRef.current[0],
-                  controlValuesRef.current[1]
-                )
-              },
+            titleMaxWidth: {
+              label: 'max width',
+              step: 5,
+              min: 0,
+              type: LevaInputs.NUMBER,
+              max: 100,
+              value: 80,
+              ...urlSync('tmw', 80),
             },
-          }),
+            titleOffset: {
+              label: 'y-offset',
+              min: -50,
+              type: LevaInputs.NUMBER,
+              max: 50,
+              step: 0.5,
+              value: -30,
+              ...urlSync('tmw', -30),
+            },
+          },
+          { collapsed: true }
+        ),
+        dimensions: folder(
+          {
+            allHeights: {
+              value: 0.5,
+              min: 0.01,
+              type: LevaInputs.NUMBER,
+              max: 2,
+              step: 0.05,
+              label: 'all heights',
+              ...urlSync('ah', 0.5),
+            },
+            valueLabelPosition: {
+              label: 'labels',
+              min: 0,
+              type: LevaInputs.NUMBER,
+              max: 1,
+              step: 0.01,
+              value: 0.65,
+              ...urlSync('vlp', 0.65),
+            },
+            innerRadius: {
+              value: 2,
+              min: 0,
+              type: LevaInputs.NUMBER,
+              max: 100,
+              step: 1,
+              label: 'donut',
+              ...urlSync('dnt', 2),
+            },
+            outerRadius: {
+              value: 150,
+              min: 50,
+              type: LevaInputs.NUMBER,
+              max: 300,
+              step: 1,
+              label: 'radius',
+              ...urlSync('r', 150),
+            },
+            cornerRadius: {
+              value: 0,
+              min: 0,
+              type: LevaInputs.NUMBER,
+              max: 50,
+              step: 1,
+              label: 'corners',
+              ...urlSync('cr', 0),
+            },
+            padAngle: {
+              value: 0.05,
+              min: 0,
+              type: LevaInputs.NUMBER,
+              max: Math.PI / 8,
+              step: 0.001,
+              label: 'pad angle',
+              ...urlSync('ang', 0.05),
+            },
+          },
+          { collapsed: false }
+        ),
+        lighting: folder(
+          {
+            ambientLightIntensity: {
+              label: 'ambient',
+              min: 0,
+              type: LevaInputs.NUMBER,
+              max: 1,
+              step: 0.05,
+              value: 0.2,
+              ...urlSync('amb', 0.2),
+            },
+            spotLightIntensity: {
+              label: 'spot',
+              min: 0,
+              type: LevaInputs.NUMBER,
+              max: 1,
+              step: 0.05,
+              value: 0.75,
+              ...urlSync('spt', 0.75),
+            },
+            environmentFile: {
+              label: 'environment',
+              value: environmentFilesMap.night,
+              type: LevaInputs.SELECT,
+              options: environmentFilesMap,
+              ...urlSync('env', environmentFilesMap.night),
+            },
+          },
+          { collapsed: true }
+        ),
+        material: folder(
+          {
+            roughness: {
+              label: 'roughness',
+              min: 0,
+              type: LevaInputs.NUMBER,
+              max: 1,
+              step: 0.05,
+              value: 0.2,
+              ...urlSync('rgh', 0.2),
+            },
+            metalness: {
+              label: 'metalness',
+              min: 0,
+              type: LevaInputs.NUMBER,
+              max: 1,
+              step: 0.05,
+              value: 0.0,
+              ...urlSync('met', 0.0),
+            },
+          },
+          { collapsed: true }
+        ),
+        glow: folder(
+          {
+            showBloom: {
+              label: 'enabled',
+              value: false,
+              type: LevaInputs.BOOLEAN,
+              ...urlSync('blm', false, 'boolean'),
+            },
+            bloomStrength: {
+              label: 'strength',
+              value: 1,
+              min: 0,
+              type: LevaInputs.NUMBER,
+              max: 3,
+              step: 0.01,
+              ...urlSync('bls', 1),
+            },
+            bloomRadius: {
+              label: 'radius',
+              value: 1.5,
+              min: 0,
+              type: LevaInputs.NUMBER,
+              max: 2,
+              step: 0.01,
+              ...urlSync('blr', 1.5),
+            },
+            bloomThreshold: {
+              label: 'threshold',
+              value: 0.15,
+              min: 0,
+              type: LevaInputs.NUMBER,
+              max: 1,
+              step: 0.01,
+              ...urlSync('blt', 0.15),
+            },
+          },
+          { collapsed: true }
+        ),
+        positioning: folder(
+          {
+            heightButtons: buttonGroup({
+              label: 'heights',
+              opts: {
+                distribute: () => {
+                  distributePrefix(
+                    'height',
+                    controlValuesRef.current[0],
+                    controlValuesRef.current[1]
+                  )
+                },
+                min: () => {
+                  setPrefix(
+                    'height',
+                    'min',
+                    controlValuesRef.current[0],
+                    controlValuesRef.current[1]
+                  )
+                },
+                max: () => {
+                  setPrefix(
+                    'height',
+                    'max',
+                    controlValuesRef.current[0],
+                    controlValuesRef.current[1]
+                  )
+                },
+                reset: () => {
+                  setPrefix(
+                    'height',
+                    0.5,
+                    controlValuesRef.current[0],
+                    controlValuesRef.current[1]
+                  )
+                },
+              },
+            }),
+            offsetButtons: buttonGroup({
+              label: 'offsets',
+              opts: {
+                distribute: () => {
+                  distributePrefix(
+                    'offset',
+                    controlValuesRef.current[0],
+                    controlValuesRef.current[1]
+                  )
+                },
+                reset: () => {
+                  setPrefix(
+                    'offset',
+                    0,
+                    controlValuesRef.current[0],
+                    controlValuesRef.current[1]
+                  )
+                },
+              },
+            }),
+          },
+          { collapsed: true }
+        ),
+        backgroundColor: {
+          value: '#1f2937',
+          label: 'bg',
+          type: LevaInputs.COLOR,
+          ...urlSync('bg', '#1f2937'),
         },
-        { collapsed: true }
-      ),
-      backgroundColor: {
-        value: '#1f2937',
-        label: 'bg',
-        type: LevaInputs.COLOR,
-        ...urlSync('bg', '#1f2937'),
       },
-    }),
+      { collapsed: window.innerHeight < 1000 }
+    ),
     spinSpeed: {
       label: 'spin',
       min: 0,
