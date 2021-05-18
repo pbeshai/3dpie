@@ -185,13 +185,13 @@ const useInputControls = () => {
             ...urlSync('r', 150),
           },
           cornerRadius: {
-            value: 10,
+            value: 0,
             min: 0,
             type: LevaInputs.NUMBER,
             max: 50,
             step: 1,
             label: 'corners',
-            ...urlSync('cr', 10),
+            ...urlSync('cr', 0),
           },
           padAngle: {
             value: 0.05,
