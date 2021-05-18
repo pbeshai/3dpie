@@ -1,4 +1,4 @@
-import { extent, max, min } from 'd3-array'
+import { extent, max, maxIndex, min } from 'd3-array'
 import { button, buttonGroup, folder, useControls, LevaInputs } from 'leva'
 import React from 'react'
 import { palette } from './theme'
@@ -64,12 +64,16 @@ function distributePrefix(prefix, controlValues, set) {
     d.startsWith(prefix)
   )
   const prefixExtent = extent(prefixKeys, (key) => controlValues[key])
+
   const numIncrements = prefixKeys.length - 1
   const increment = (prefixExtent[1] - prefixExtent[0]) / numIncrements
   const update = {}
-  let i = 0
-  for (const key of prefixKeys) {
-    update[key] = prefixExtent[0] + increment * i++
+  const maxKeyIndex = maxIndex(prefixKeys, (key) => controlValues[key])
+  for (let i = 0; i < prefixKeys.length; ++i) {
+    // start to the left of the max index... (not perfect, but hopefully reasonable ux)
+    const key =
+      prefixKeys[(prefixKeys.length - 1 - i + maxKeyIndex) % prefixKeys.length]
+    update[key] = prefixExtent[0] + increment * i
   }
   set(update)
 }
