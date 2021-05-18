@@ -120,9 +120,9 @@ const useInputControls = () => {
       window.location.href = '/'
     }),
     customize: folder({
-      titleFolder: folder({
+      title: folder({
         title: {
-          label: 'title',
+          label: 'text',
           value: '',
           type: LevaInputs.STRING,
           ...urlSync('t', ''),
