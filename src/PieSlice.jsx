@@ -62,6 +62,11 @@ const PieSlice = ({
     config: springConfig,
   })
 
+  const extrudeGeometryArgs = React.useMemo(() => [shape, extrudeSettings], [
+    shape,
+    extrudeSettings,
+  ])
+
   return (
     <animated.group key={i} position={springProps.position}>
       <animated.mesh
@@ -76,8 +81,8 @@ const PieSlice = ({
         // onPointerLeave={() => setActiveSlice(undefined)}
       >
         {/* <shapeGeometry args={[shape]} /> */}
-        <extrudeGeometry args={[shape, extrudeSettings]} />
-        {/* <cylinderGeometry args={[1, 1, 0.4, 64]} />*/}
+        <extrudeGeometry args={extrudeGeometryArgs} />
+        {/* <cylinderGeometry args={[1, 1, 0.4, 64]} /> */}
         {/* <meshPhongMaterial color={color} /> */}
         <meshStandardMaterial
           color={color}

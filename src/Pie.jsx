@@ -81,11 +81,9 @@ const usePie = (data, innerRadius, outerRadius, cornerRadius, padAngle) => {
 
   // this will suspend when loading a new svg data URI
   const loadedSvg = useLoader(SVGLoader, pieSvgDataUri)
-  // convert our threejs-loaded svg to threejs shapes
-  const shapes = loadedSvg.paths.flatMap((shapePath) => shapePath.toShapes())
 
   // return everything in a bundle to facilitate caching
-  return { data, innerRadius, shapes, pieSvgDataUri, arcs, arcGenerator }
+  return { data, innerRadius, loadedSvg, pieSvgDataUri, arcs, arcGenerator }
 }
 
 /** Cache our pie so when useLoader suspends we can return a previous version */
@@ -119,5 +117,11 @@ const useCachedPie = (
     cachedPie.current = pie
   })
 
-  return pie
+  // convert our threejs-loaded svg to threejs shapes
+  const shapes = React.useMemo(
+    () => pie.loadedSvg.paths.flatMap((shapePath) => shapePath.toShapes()),
+    [pie.loadedSvg]
+  )
+
+  return { ...pie, shapes }
 }
