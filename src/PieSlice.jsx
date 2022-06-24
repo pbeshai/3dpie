@@ -120,8 +120,8 @@ const PieSlice = ({
         <Billboard>
           <Text
             position={[xText, yTextOffset + (showValue ? 0.15 : 0), zText]}
-            // castShadow
-            fontSize={0.1}
+            castShadow={!showValue}
+            fontSize={showValue ? 0.1 : 0.125}
             maxWidth={200}
             lineHeight={1}
             letterSpacing={0.02}
@@ -130,7 +130,7 @@ const PieSlice = ({
             anchorX="center"
             anchorY="middle"
             fillOpacity={1}
-            color={color}
+            color={showValue ? color : 'white'}
             outlineWidth={'2.5%'}
             outlineColor="#000000"
             outlineOpacity={1}
