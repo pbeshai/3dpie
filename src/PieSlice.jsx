@@ -26,6 +26,8 @@ const PieSlice = ({
   roughness = 0.2,
   metalness = 0,
   formatter = format('.0%'),
+  showValue = true,
+  valueAsPercent = true,
 }) => {
   const arc = arcs[i]
   const label = datum.label
@@ -91,31 +93,33 @@ const PieSlice = ({
         />
         {/* <meshBasicMaterial color={color} side={BackSide} /> */}
       </animated.mesh>
-      <Billboard>
-        <Text
-          position={[xText, yTextOffset, zText]}
-          castShadow
-          fontSize={0.2}
-          maxWidth={200}
-          lineHeight={1}
-          letterSpacing={0.02}
-          textAlign={'left'}
-          font="https://fonts.gstatic.com/s/raleway/v14/1Ptrg8zYS_SKggPNwK4vaqI.woff"
-          anchorX="center"
-          anchorY="middle"
-          fillOpacity={1}
-          color="white"
-          outlineWidth={'2.5%'}
-          outlineColor="#000000"
-          outlineOpacity={0.2}
-        >
-          {formatter(percent)}
-        </Text>
-      </Billboard>
+      {showValue && (
+        <Billboard>
+          <Text
+            position={[xText, yTextOffset, zText]}
+            castShadow
+            fontSize={0.2}
+            maxWidth={200}
+            lineHeight={1}
+            letterSpacing={0.02}
+            textAlign={'left'}
+            font="https://fonts.gstatic.com/s/raleway/v14/1Ptrg8zYS_SKggPNwK4vaqI.woff"
+            anchorX="center"
+            anchorY="middle"
+            fillOpacity={1}
+            color="white"
+            outlineWidth={'2.5%'}
+            outlineColor="#000000"
+            outlineOpacity={0.2}
+          >
+            {valueAsPercent ? formatter(percent) : arc.value}
+          </Text>
+        </Billboard>
+      )}
       {label && (
         <Billboard>
           <Text
-            position={[xText, yTextOffset + 0.15, zText]}
+            position={[xText, yTextOffset + (showValue ? 0.15 : 0), zText]}
             // castShadow
             fontSize={0.1}
             maxWidth={200}

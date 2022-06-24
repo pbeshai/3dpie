@@ -26,6 +26,8 @@ const Pie = ({
   metalness,
   onClickSlice,
   valueLabelPosition,
+  showValues,
+  valuesAsPercent,
 }) => {
   // note we read data out to get the cached version that is in sync with our pie
   const { data, arcs, shapes, arcGenerator } = useCachedPie(
@@ -59,6 +61,8 @@ const Pie = ({
             roughness={roughness}
             metalness={metalness}
             valueLabelPosition={valueLabelPosition}
+            showValue={showValues}
+            valueAsPercent={valuesAsPercent}
           />
         )
       })}

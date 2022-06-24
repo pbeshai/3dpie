@@ -119,6 +119,8 @@ const useInputControls = () => {
     bloomRadius,
     bloomThreshold,
     spinSpeed,
+    showValues,
+    valuesAsPercent,
   } = useControls({
     reset: button(() => {
       window.location.href = '/'
@@ -371,6 +373,18 @@ const useInputControls = () => {
           type: LevaInputs.COLOR,
           ...urlSync('bg', '#1f2937'),
         },
+        showValues: {
+          value: true,
+          label: 'show values',
+          type: LevaInputs.BOOLEAN,
+          ...urlSync(`show_values`, true, 'boolean'),
+        },
+        valuesAsPercent: {
+          value: true,
+          label: '% format',
+          type: LevaInputs.BOOLEAN,
+          ...urlSync(`pct_values`, true, 'boolean'),
+        },
       },
       { collapsed: window.innerHeight < 1000 }
     ),
@@ -408,9 +422,12 @@ const useInputControls = () => {
     const id = `slice ${i + 1}`
     controlConfig[id] = folder({
       [`value${i}`]: {
-        value: 0.8 - (i === 0 ? 0 : 1 / Math.pow(2, i)),
+        value: i === 0 ? 1.5 : +(1 / Math.pow(2, i * 0.35)).toFixed(2),
         label: 'value',
-        ...urlSync(`v${i}`, i === 0 ? 1.5 : 1 / Math.pow(2, i * 0.35)),
+        ...urlSync(
+          `v${i}`,
+          i === 0 ? 1.5 : +(1 / Math.pow(2, i * 0.35)).toFixed(2)
+        ),
       },
       details: folder(
         {
@@ -495,6 +512,8 @@ const useInputControls = () => {
       bloomRadius,
       bloomThreshold,
       spinSpeed,
+      showValues,
+      valuesAsPercent,
     },
     set,
   ]

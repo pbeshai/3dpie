@@ -31,6 +31,8 @@ function App() {
     title,
     titleMaxWidth,
     titleOffset,
+    showValues,
+    valuesAsPercent,
   } = controlValues
 
   const addEnvironment = !!environmentFile
@@ -67,6 +69,8 @@ function App() {
               roughness={roughness}
               metalness={metalness}
               valueLabelPosition={valueLabelPosition}
+              showValues={showValues}
+              valuesAsPercent={valuesAsPercent}
               onClickSlice={(i) =>
                 set({ [`explode${i}`]: !controlValues[`explode${i}`] })
               }
